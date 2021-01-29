@@ -1,0 +1,328 @@
+---
+title: "Données sur les applications PLAY-STORE"
+author: "Solène MARINIER & Fried-Junior SABAYE"
+geometry: a4paper,top=2cm,bottom=2cm,left=1.5cm,right=1.5cm
+fontsize: 13pt
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+lang: fr
+always_allow_html: yes 
+
+---
+<style>
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+    background-color: rosybrown;
+</style>
+
+
+#Analyse de Données
+
+&nbsp;
+
+##Aperçu sur les données à étudier 
+
+
+```{r,echo=F,include=F}
+df<-read.table("google-play-store.csv",sep=",",header=TRUE)
+df1<-data.frame(df[c(1:30),-1])
+```
+
+
+
+```{r,echo=F,warning=FALSE}
+library(kableExtra)
+kable(df1) %>%
+ kable_styling(c("striped", "bordered","responsive", "condensed"),full_width = T) %>%
+  scroll_box(width = "100%", height = "500px")
+```
+
+
+
+```{r,echo=F,include=F}
+tab.cat<-data.frame(table(df$Category)) 
+Proportion<-data.frame(tab.cat$Freq/sum(tab.cat$Freq))
+PROPORTION<-round(Proportion*100,3)
+tab.cat.PROP<-cbind(tab.cat,PROPORTION)
+colnames(tab.cat.PROP)<-c("Catégorie","Effectif",  "Proportion (%)")
+sort(tab.cat.PROP$`PROPORTION (%)`,decreasing = FALSE)
+tab.cat.PROP2<-tab.cat.PROP[order(tab.cat.PROP[,2],decreasing=F),]
+colnames(tab.cat.PROP2)<-c("Categories","Effectif",  "Proportion (%)")
+tab.cat.PROP2
+```
+
+&nbsp;
+
+# Analyse des catégories des applications
+
+&nbsp;
+
+## Observations portées sur les effectifs  
+
+&nbsp;
+
+```{r,fig.height=8,fig.width=8,echo=F,include=F}
+
+CATEGORIE<- c("1.9","BEAUTY ", "COMICS", "PARENTING", "EVENTS", "ART_AND_DESIGN", "WEATHER", "AUTO_AND_VEHICLES","LIBRARIES_AND_DEMO","HOUSE_AND_HOME","FOOD_AND_DRINK","MAPS_AND_NAVIGATION", "ENTERTAINMENT","EDUCATION","VIDEO_PLAYERS","BOOKS","DATING","TRAVEL_AND_LOCAL", "SHOPPING","NEWS_AND_MAGAZINES","SOCIAL","PHOTOGRAPHY","HEALTH_AND_FITNESS","FINANCE ","LIFESTYLE","SPORTS","COMMUNICATION","PERSONALIZATION","PRODUCTIVITY","BUSINESS","MEDICAL","TOOLS","GAME","FAMILY")
+```
+
+
+```{r,echo=FALSE,include=F}
+Categories<-data.frame(CATEGORIE)
+```
+
+```{r,,fig.height=10,fig.width=14,echo=F} 
+par(mar=c(7,3,3,3))
+couls<-c(rep("grey10",10),rep("grey55",11),rep("grey80",10),rep("grey95",3))
+barplot(tab.cat.PROP2$Effectif,main = "EFFECTIF DES APPLICATIONS PAR CATEGORIE",names.arg = CATEGORIE ,las=2,ylim=c(0,2000),space=1,cex.names =0.6,col=couls,bty="l")
+legend(x="left", legend=c("Inferieur a 100","Entre 100 et 300","Entre 300 et 500","Superieur a 500"),box.lwd = 0 ,cex=1.5,fill=c("grey10","grey55","grey80","grey95"),bty="b",text.col ="grey10",ncol = 2,title="Effectif")
+abline(h=c(100,300,500),col="black",lwd=2.5, lty=1)
+text(x=69,y=100,"100",pos=1)
+text(x=69,y=300,"300",pos=1)
+text(x=69,y=500,"500",pos=1)
+```
+
+
+&nbsp;
+
+
+
+Sur ce graphique, on représente l'effectif des applications pour chaque catégorie.
+On ajoute des lignes horizontales à hauteur d'effectif, h=100, h=300 et h=500 pour séparer les catégories en 4 groupes en fonction du nombre d'applications qu'elles possèdent. Notons qu'à chacun de ces groupes, est associée une couleur distincte.
+
+## Zoom sur les catégories 
+
+&nbsp;
+
+### Classement par groupes d'effectifs
+
+
+
+```{r,echo=F,include=F}
+tab.type<-data.frame(tapply(df$Type=="Paid",df$Category,sum))
+tab.cat.PROP3<-cbind(tab.cat.PROP,tab.type)
+colnames(tab.cat.PROP3)<-c("CATEGORIE","EFFECTIF",  "PROPORTION (%)","Nombre appliS Payantes")
+tab.cat.PROP4<-tab.cat.PROP3[order(tab.cat.PROP3[,2],decreasing=F),]
+tab.cat.PROP4.2<-tab.cat.PROP4[,-1]
+
+```
+
+
+
+
+```{r,echo=F}
+kable(tab.cat.PROP4.2,escape = F, align = "c") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"," bordered"), full_width = T, position ="float_right") %>%
+  column_spec(4, color="red") %>%
+  row_spec(1, background = "brown")  %>%
+  group_rows("Groupe 1 : Inferieur a 100",1,10,label_row_css = "background-color: RosyBrown ; color: black;") %>%
+  group_rows("Groupe 2 : Entre 100 et 300",11,21,label_row_css = "background-color: RosyBrown ; color: black;") %>%
+  group_rows("Groupe 3 : Entre 300 ET 500 ",22,31,label_row_css = "background-color: RosyBrown ; color: black;") %>%
+  group_rows("Groupe 4 : Superieur A 500",32,34,label_row_css = "background-color: RosyBrown ; color: black;")  %>%
+    scroll_box(width = "100%", height = "600px")
+```
+
+
+```{r,echo=F,include=F}
+
+
+tab.cat.PROP5<-tab.cat.PROP4[,-c(1,3)]
+tab.cat.PROP6<-cbind(tab.cat.PROP5,(tab.cat.PROP5$EFFECTIF-tab.cat.PROP5$`Nombre appliS Payantes`))
+tab.cat.PROP6<-tab.cat.PROP6[,c(1,3)]
+colnames(tab.cat.PROP6)=c("Effectif","Application gratuites")
+tab.cat.PROP7<-cbind(Categories,tab.cat.PROP6)
+tab.cat.PROP7
+```
+
+&nbsp;
+
+### Représentations graphiques associées aux différents groupes
+
+&nbsp;
+
+
+
+```{r,fig.height=8,fig.width=10,echo=F}
+
+par(mfrow=c(2,2)) 
+par(mar=c(5,3,5,5))
+
+
+barplot(t(tab.cat.PROP5[1:10,]),beside=T,col=c("grey20","red"),ylim=c(0,500),las=2,names.arg =CATEGORIE[1:10],cex.names = 0.6,main="ENTRE 0 ET 100",las=2)
+legend(x="topright", legend=c("Applications payantes","Applications gratuites"),box.lwd = 0 ,cex=1.5,fill=c("red","grey"),bty="s")
+
+barplot(t(tab.cat.PROP5[11:21,]),beside=T,col=c("grey55","red"),names.arg =CATEGORIE[11:21],ylim=c(0,500),las=2,cex.names = 0.6,main="ENTRE 100 ET 300")
+
+barplot(t(tab.cat.PROP5[22:31,]),beside=T,col=c("grey80","red"),ylim=c(0,500),las=2, names.arg =CATEGORIE[22:31],cex.names = 0.6,main="ENTRE 300 ET 500")
+
+barplot(t(tab.cat.PROP5[32:34,]),beside=T,col=c("grey95","red"),names.arg =CATEGORIE[32:34],ylim=c(0,2000),las=1,main="SUPERIEUR A 500") 
+abline(h=500,col="black",lwd=1, lty=2)
+
+
+```
+
+
+&nbsp;
+
+## Relation entre les différents effectifs 
+
+&nbsp;
+L'objectif de cette représentation graphique est de savoir si le nombre d'applications payantes par catégorie augmente avec le nombre d'applications, toutes confondues. 
+
+```{r,echo=F}
+plot(tab.cat.PROP7$Effectif,type="l",ylim=c(0,800),ylab="Effectifs",xlab="CATEGORIES",lty=1,lwd=4,bty="l",xaxt="n",main="Relation Nombre Applications payantes - Nombre Applications")
+
+couls1<-c(rep("darkolivegreen1",4),rep("rosybrown1",1),rep("darkolivegreen1",2),rep("rosybrown1",8),rep("darkolivegreen1",1),rep("rosybrown1",11),rep("darkolivegreen1",1),rep("rosybrown1",2),rep("darkolivegreen1",1),rep("rosybrown1",2),rep("darkolivegreen1",1))
+
+text (tab.cat.PROP7$Effectif+50, CATEGORIE,cex=0.5, pos=4,col="black",srt=80)
+text(c(32,33,34),c(600,650,750),c("TOOLS","GAME","FAMILY"),pos=4,col="black",cex=0.5,srt=85)
+
+segments(c(1:34),c(0,0,0,2,1,3, 8,3,1,0,2,5,2,4,4,28,7,12,2,2, 3,22,16, 17,19,24,27,83,28,14,109,78,83, 191),c(1:34), c(1, 53,60,60,64,65,82,85,85, 88,127,137,149,156,175,231,234,258 ,260 ,283,295,335,341,366,382,384,387,392,424,460,463,550,650,750),lty=1,lwd=1.5,col=couls1)
+
+lines(tab.cat.PROP5$`Nombre appliS Payantes`,type="l",col="firebrick",lty=1,lwd=4)
+
+legend(0,800,cex=0.8 ,legend=c("Nombre d'applications payantes","Effectif par categorie","Relation croissante","Relation non-croissante"),lwd=3, lty=1,box.lty=0,col=c("firebrick","black","darkolivegreen1","rosybrown1"))
+
+```
+
+On a ordonné les catégories par ordre croissant de leur effectifs.
+
+On parle de relation croissante lorsque l'effectif d'applications payantes de la catégorie est supérieur à l'effectif d'applications payantes de toutes les catégories précédentes. 
+On constate, pour 25 des 34 catégories, que cette relation de croissance n'est pas vérifiée.
+
+On peut donc conclure que le nombre d'applications payantes par catégorie ne dépend de l'effectif de celle-ci.
+  
+
+# Analyse des notes des applications
+
+&nbsp;
+
+## Moyennes des notes par catégorie
+
+&nbsp;
+
+```{r,include=F,echo=F}
+tab.cat_rat<-data.frame(df[,c(2,3,7)])
+tab.cat_rat2<-tab.cat_rat[!is.na(tab.cat_rat$Rating),]
+tab.cat_rat2
+```
+
+```{r,echo=F,include=F}
+tab.cat_rat3<-data.frame(tapply(tab.cat_rat2$Rating,tab.cat_rat2$Category, mean))
+tab.cat_rat4<-data.frame(tab.cat_rat3[c(2:34),])
+colnames(tab.cat_rat4)<-"Moyenne des notes"
+tab.cat_rat4
+```
+
+```{r,echo=F,include=F}
+df2_free<-tab.cat_rat2[tab.cat_rat2$Type=="Free",]
+df2_paid<-tab.cat_rat2[tab.cat_rat2$Type=="Paid",]
+
+df2_paid_mean<-data.frame(tapply(df2_paid$Rating,df2_paid$Category, mean))
+colnames(df2_paid_mean)<-"Moyennes"
+df2_paid_mean2<-data.frame(df2_paid_mean[!is.na(df2_paid_mean$Moyennes),])
+df2.free_mean<-data.frame(tapply(df2_free$Rating,df2_free$Category,mean))
+df2.free_mean2<-df2.free_mean[c(2:34),]
+df2.free_mean2
+```
+
+```{r,echo=FALSE}
+library(kableExtra)
+
+tab_mean<-data.frame(tab.cat_rat3,df2.free_mean,df2_paid_mean)
+colnames(tab_mean)<-(c("Moyennes globales","Moyennes appliS gratuites","Moyenne appliS payantes"))
+tab_mean[is.na(tab_mean)] <- 0
+tab_mean1<-tab_mean[-1,]
+
+kable(tab_mean1,escape = F, align = "c") %>%
+ kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"," bordered"), full_width = T,position ="float_right") %>%
+ row_spec(c(3,6,11,17,18), background = "rosybrown") %>%
+   scroll_box(width = "100%", height = "600px")
+```
+
+
+
+&nbsp;
+
+Les lignes colorées sont celles des catégories qui n'ont aucune application payante.
+
+&nbsp;
+
+## Relation entre les moyennes des notes
+
+```{r,fig.height=6,fig.width=10,echo=F}
+plot(df2_paid_mean2,col="red",type="l",ylab="Notes Moyennes",xlab="CATEGORIES" ,las=1,ylim=c(3.4,5.3),xaxt="n",lwd=3,lty=2,main="Lien entre les moyennes des Applications",bty="l")
+
+points(df2.free_mean2,type="l",col="purple",lwd=3,lty=1)
+points(tab.cat_rat4,type="l",col="black",lwd=3,lty=1)
+
+legend("topright",cex=1,legend=c("Moyenne Applications payantes","Moyenne Applications gratuites","Moyenne globale par categorie"),lwd=3, lty=c(2,1,1),box.lwd = 0, title="Type de moyenne",bg="grey97",col=c("red","purple","black"))
+
+abline(v =c(1:34),col="grey40",lwd=0.7,lty=3)
+```
+
+On peut constater que les fortes fluctuations des moyennes des applications payantes n'ont pratiquement aucun impact sur les moyennes générales. Ceci est dû à la différence significative d'effectifs entre les applications payantes et les applications gratuites dans toutes les catégories.
+
+
+
+```{r, fig.height=4, fig.width=6,echo=F,include=F}
+tab.rat_type<-data.frame(df[,c(1,3,7)])
+tab.rat_type2<-tab.rat_type[!is.na(tab.rat_type$Rating),]
+levels(tab.rat_type2$Type)
+tab.rat_type3<-data.frame(tab.rat_type2[order(tab.rat_type2[,2],decreasing = T),])
+tab.rat_type0<-data.frame(tab.rat_type3[c(2:9367),])
+tab.rat_type0$Type<-droplevels(tab.rat_type0$Type)
+range(tab.rat_type0$Rating)
+```
+## Représentation graphique
+
+```{r,echo=F,fig.align="right",fig.width=7,fig.height=4}
+plot.tbr0<-boxplot(tab.rat_type0$Rating~tab.rat_type0$Type, ylim=c(3,5),outline=FALSE, horizontal=T, main="Repartition des notes des applications en fonction de leur Type", col = "rosybrown",names=c("Gratuites","Payantes"), las=0,boxwex=0.6,varwidth=T)
+
+plot_stats<-data.frame(plot.tbr0$stats)
+colnames(plot_stats)<-c("Gratuites","Payantes")
+rownames(plot_stats)<-c("Min","Q1","Mediane","Q3","Max")
+kable_styling(kable(plot_stats),bootstrap_options =c("striped","hover"),full_width = F)
+```
+
+&nbsp;
+
+
+##Test sur les moyennes
+```{r,echo=F, include=F}
+var.test(tab.rat_type0$Rating[tab.rat_type0$Type=="Paid"],tab.rat_type0$Rating[tab.rat_type0$Type=="Free"])
+
+#La p-value est inférieure à 0,05 donc on rejette l'hypothèse d'égalité des variances.
+
+```
+
+On effectue un test pour savoir si la moyenne des notes des applications payantes est supérieure à la moyenne des notes des applications gratuites.
+
+&nbsp;
+_**H0 :** La moyenne des notes pour les applications payantes est égale à la moyenne des notes pour les applications gratuites._
+
+&nbsp;
+_**H1 :** La moyenne des notes pour les applications payante est supérieure à la moyenne des notes pour les applications gratuites._
+```{r,echo=F, include=F}
+moy.test<-t.test(tab.rat_type0$Rating[tab.rat_type0$Type=="Paid"],tab.rat_type0$Rating[tab.rat_type0$Type=="Free"], var.equal = F, alternative="greater")
+```
+
+```{r, echo=F}
+resultat.test<-data.frame(c(moy.test$estimate, moy.test$conf.int[1], moy.test$conf.int[2], moy.test$p.value))
+colnames(resultat.test)<-"Note"
+rownames(resultat.test)<-c("Moyenne pour les payantes","Moyenne pour les gratuites","Borne inf. de l'IC 95% de la diff.","Borne sup. de l'IC 95% de la diff.", "p-value")
+kable_styling(kable(resultat.test), bootstrap_options=c("striped","hover"),full_width = F)
+```
+
+&nbsp;
+
+La p-value est inférieure à 0.05, donc au risque 5%, on rejette H0. Donc, au risque 5%, la moyenne des notes des applications payantes est supérieure à la moyenne des notes des applications gratuites.
+
+
+
+
+
+
+
+
